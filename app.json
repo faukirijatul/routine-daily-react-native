@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "routine-app",
+    "name": "Routine Daily",
     "slug": "routine-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,24 +8,31 @@
     "scheme": "routineapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.fauki.routineapp"
     },
     "android": {
+      "package": "com.fauki.routineapp",
+      "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#2563eb"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_SPECIAL_USE"
+      ]
     },
     "web": {
       "bundler": "metro",
-      "output": "server",
-      "favicon": "./assets/images/favicon.png"
+      "output": "server"
     },
     "plugins": [
       "expo-router",
+      "./plugins/withNotifeeForegroundService",
       [
         "expo-splash-screen",
         {
@@ -33,10 +40,39 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "TodayRoutine",
+              "label": "Jadwal Hari Ini",
+              "description": "Statistik & daftar rutinitas hari ini",
+              "minWidth": "250dp",
+              "minHeight": "350dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 5,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "77f2a619-1566-4cd4-8e00-eb246a9f4fec"
+      }
+    },
+    "owner": "faukirijatul"
   }
 }
