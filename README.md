@@ -9,7 +9,7 @@ Routine Daily adalah aplikasi Android untuk menyusun rutinitas harian, menandai 
 - Mengubah status kegiatan dengan urutan **Belum → Selesai → Gagal → Belum**.
 - Melihat jumlah kegiatan yang selesai, gagal, atau belum dikerjakan pada hari ini.
 - Mengimpor jadwal dari JSON. Impor mengganti seluruh jadwal yang tersimpan.
-- Menampilkan jadwal serta progres hari ini pada widget Android. Ketuk jadwal untuk membuka aplikasi atau tombol status pada widget untuk mengubah statusnya.
+- Menampilkan progres dan jadwal hari ini pada widget Android yang menyesuaikan jumlah baris dengan ukurannya. Jika ada jadwal lain yang tidak ditampilkan, widget menunjukkan jumlahnya; ketuk jadwal atau area lainnya untuk membuka aplikasi, atau tombol status untuk mengubah status kegiatan.
 - Menerima notifikasi pengingat dan notifikasi kegiatan yang sedang berlangsung.
 - Menyimpan jadwal secara lokal di perangkat. Tidak ada jadwal contoh bawaan.
 

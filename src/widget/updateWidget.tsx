@@ -5,9 +5,17 @@ import { TodayWidget } from "./TodayWidget";
 export const refreshWidget = () =>
   requestWidgetUpdate({
     widgetName: "TodayRoutine",
-    renderWidget: async () => {
+    renderWidget: async (widgetInfo) => {
       const { day, stats, items } = await getWidgetData();
-      return <TodayWidget day={day} stats={stats} items={items} />;
+      return (
+        <TodayWidget
+          day={day}
+          stats={stats}
+          items={items}
+          width={widgetInfo.width}
+          height={widgetInfo.height}
+        />
+      );
     },
     widgetNotFound: () => {},
   });

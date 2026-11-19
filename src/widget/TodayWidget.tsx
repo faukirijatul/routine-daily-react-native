@@ -1,8 +1,5 @@
-"use no memo";
-import type { ReactElement } from "react";
 import {
   FlexWidget,
-  ListWidget,
   TextWidget,
 } from "react-native-android-widget";
 import { DailyStats, RoutineItem } from "../types/routine";
@@ -35,7 +32,6 @@ function getActiveInfo(items: RoutineItem[]) {
   return { activeId: null as string | null, progress: 0 };
 }
 
-// Sisa waktu sampai kegiatan berakhir, contoh: "1j 23m" atau "45m"
 function formatRemaining(endTime: string): string {
   const now = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
@@ -45,101 +41,196 @@ function formatRemaining(endTime: string): string {
   return h > 0 ? `${h}j ${m}m` : `${m}m`;
 }
 
-// Progress bar: lebar diatur lewat rasio flex, bukan persen
-const ProgressBar = ({
-  progress,
-  marginTop = 0,
-}: {
-  progress: number;
-  marginTop?: number;
-}) => (
-  <FlexWidget
-    style={{
-      width: "match_parent",
-      height: 6,
-      flexDirection: "row",
-      backgroundColor: "#bfdbfe",
-      borderRadius: 4,
-      marginTop,
-    }}
-  >
+function ProgressBar({ progress }: { progress: number }) {
+  return (
     <FlexWidget
       style={{
-        flex: Math.max(progress, 1),
-        height: 6,
-        backgroundColor: "#2563eb",
-        borderRadius: 4,
+        width: "match_parent",
+        height: 5,
+        flexDirection: "row",
+        backgroundColor: "#bfdbfe",
+        borderRadius: 3,
       }}
-    />
-    <FlexWidget style={{ flex: Math.max(100 - progress, 1), height: 6 }} />
-  </FlexWidget>
-);
+    >
+      <FlexWidget
+        style={{
+          flex: Math.max(progress, 1),
+          height: 5,
+          backgroundColor: "#2563eb",
+          borderRadius: 3,
+        }}
+      />
+      <FlexWidget style={{ flex: Math.max(100 - progress, 1), height: 5 }} />
+    </FlexWidget>
+  );
+}
 
-const Stat = ({
+function Stat({
   value,
   label,
-  color,
 }: {
   value: string;
   label: string;
-  color: `#${string}`;
-}) => (
-  <FlexWidget style={{ flex: 1, alignItems: "center" }}>
-    <TextWidget
-      text={value}
-      style={{ fontSize: 15, fontWeight: "bold", color }}
-    />
-    <TextWidget
-      text={label}
-      style={{ fontSize: 10, color: "#dbeafe", marginTop: 2 }}
-    />
-  </FlexWidget>
-);
+}) {
+  return (
+    <FlexWidget style={{ flex: 1, alignItems: "center" }}>
+      <TextWidget
+        text={value}
+        style={{ fontSize: 13, fontWeight: "bold", color: "#ffffff" }}
+        maxLines={1}
+        truncate="END"
+      />
+      <TextWidget
+        text={label}
+        style={{ fontSize: 9, color: "#dbeafe", marginTop: 1 }}
+        maxLines={1}
+        truncate="END"
+      />
+    </FlexWidget>
+  );
+}
 
-// Wrapper pemberi jarak antar baris. Jarak lewat padding karena
-// marginBottom pada child langsung ListWidget sering diabaikan di Android.
-const Row = ({
-  children,
-  gap = 10,
+function RoutineRow({
+  item,
+  isActive,
+  isCompleted,
+  isFailed,
 }: {
-  children: ReactElement;
-  gap?: number;
-}) => (
-  <FlexWidget
-    style={{
-      width: "match_parent",
-      paddingBottom: gap,
-    }}
-  >
-    {children}
-  </FlexWidget>
-);
+  item: RoutineItem;
+  isActive: boolean;
+  isCompleted: boolean;
+  isFailed: boolean;
+}) {
+  const backgroundColor = isActive
+    ? "#dbeafe"
+    : isCompleted
+      ? "#eff6ff"
+      : isFailed
+        ? "#f1f5f9"
+        : "#ffffff";
+  const borderColor = isActive
+    ? "#60a5fa"
+    : isCompleted
+      ? "#93c5fd"
+      : isFailed
+        ? "#cbd5e1"
+        : "#dbeafe";
+  const statusColor = isCompleted
+    ? "#2563eb"
+    : isFailed
+      ? "#475569"
+      : "#eff6ff";
+
+  return (
+    <FlexWidget
+      style={{
+        width: "match_parent",
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor,
+        borderRadius: 12,
+        padding: 8,
+        borderWidth: 1,
+        borderColor,
+        marginTop: 6,
+      }}
+      clickAction="OPEN_APP"
+      accessibilityLabel={`Buka aplikasi untuk jadwal ${item.title}`}
+    >
+      <FlexWidget style={{ flex: 1, marginRight: 8 }}>
+        <TextWidget
+          text={`${item.startTime} - ${item.endTime}`}
+          style={{ fontSize: 10, color: "#64748b", fontWeight: "500" }}
+          maxLines={1}
+          truncate="END"
+        />
+        <TextWidget
+          text={item.title}
+          style={{
+            fontSize: 12,
+            fontWeight: "600",
+            color: isCompleted ? "#64748b" : "#1e293b",
+            marginTop: 1,
+          }}
+          maxLines={1}
+          truncate="END"
+        />
+      </FlexWidget>
+      <FlexWidget
+        style={{
+          width: 34,
+          height: 26,
+          borderRadius: 13,
+          backgroundColor: statusColor,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        clickAction="TOGGLE_STATUS"
+        clickActionData={{ id: item.id }}
+        accessibilityLabel={`Ubah status ${item.title}`}
+      >
+        <TextWidget
+          text={isCompleted ? "✓" : isFailed ? "×" : "○"}
+          style={{
+            fontSize: 13,
+            color: isCompleted || isFailed ? "#ffffff" : "#1d4ed8",
+            fontWeight: "600",
+          }}
+          maxLines={1}
+        />
+      </FlexWidget>
+    </FlexWidget>
+  );
+}
 
 export function TodayWidget({
   day,
   stats,
   items,
+  width = 250,
+  height = 350,
 }: {
   day: string;
   stats: DailyStats;
   items: RoutineItem[];
+  width?: number;
+  height?: number;
 }) {
   const { activeId, progress } = getActiveInfo(items);
-  const activeItem = items.find((i) => i.id === activeId) || null;
+  const activeItem = items.find((item) => item.id === activeId) ?? null;
+  const reservedHeight = activeItem ? 238 : 178;
+  const rowHeight = 48;
+  const visibleCount = Math.max(
+    items.length > 0 ? 1 : 0,
+    Math.min(
+      6,
+      Math.floor(Math.max(height - reservedHeight, rowHeight) / rowHeight),
+    ),
+  );
+  const visibleItems = items.slice(0, visibleCount);
+  const remainingCount = Math.max(0, items.length - visibleItems.length);
+  const compact = width < 220;
 
-  // Setiap elemen di array ini menjadi satu baris di ListWidget terluar
-  const rows: ReactElement[] = [];
-
-  // ========== HEADER WIDGET ==========
-  rows.push(
-    <Row key="header" gap={10}>
+  return (
+    <FlexWidget
+      style={{
+        width: "match_parent",
+        height: "match_parent",
+        flexDirection: "column",
+        backgroundColor: "#eff6ff",
+        borderRadius: 20,
+        padding: compact ? 8 : 10,
+      }}
+      clickAction="OPEN_APP"
+      accessibilityLabel="Buka aplikasi Routine Daily"
+    >
       <FlexWidget
         style={{
           width: "match_parent",
-          backgroundColor: "#2563eb",
-          borderRadius: 18,
-          padding: 14,
           flexDirection: "column",
+          backgroundColor: "#2563eb",
+          borderRadius: 16,
+          padding: compact ? 9 : 11,
         }}
       >
         <FlexWidget
@@ -148,69 +239,49 @@ export function TodayWidget({
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: 6,
           }}
         >
           <TextWidget
             text="Jadwal Hari Ini"
-            style={{ fontSize: 15, fontWeight: "bold", color: "#ffffff" }}
+            style={{ fontSize: compact ? 13 : 14, fontWeight: "bold", color: "#ffffff" }}
+            maxLines={1}
+            truncate="END"
           />
-          <FlexWidget
-            style={{
-              backgroundColor: "#1d4ed8",
-              paddingHorizontal: 10,
-              paddingVertical: 3,
-              borderRadius: 10,
-            }}
-          >
-            <TextWidget
-              text={day}
-              style={{ fontSize: 11, fontWeight: "600", color: "#ffffff" }}
-            />
-          </FlexWidget>
+          <TextWidget
+            text={day}
+            style={{ fontSize: 10, fontWeight: "600", color: "#ffffff" }}
+            maxLines={1}
+            truncate="END"
+          />
         </FlexWidget>
-
-        <TextWidget
-          text="Pantau performa rutinitas harian Anda."
-          style={{ fontSize: 11, color: "#dbeafe", marginBottom: 10 }}
-        />
-
         <FlexWidget
           style={{
             width: "match_parent",
             flexDirection: "row",
-            backgroundColor: "#ffffff1a",
-            paddingVertical: 8,
-            paddingHorizontal: 6,
-            borderRadius: 14,
+            backgroundColor: "#1d4ed8",
+            paddingVertical: 6,
+            borderRadius: 12,
+            marginTop: 7,
           }}
         >
-          <Stat
-            value={String(stats.completed)}
-            label="Selesai"
-            color="#ffffff"
-          />
-          <Stat value={String(stats.failed)} label="Gagal" color="#ffffff" />
-          <Stat value={String(stats.pending)} label="Belum" color="#ffffff" />
-          <Stat value={`${stats.percentage}%`} label="Sukses" color="#ffffff" />
+          <Stat value={String(stats.completed)} label="Selesai" />
+          <Stat value={String(stats.failed)} label="Gagal" />
+          <Stat value={String(stats.pending)} label="Belum" />
+          <Stat value={`${stats.percentage}%`} label="Sukses" />
         </FlexWidget>
       </FlexWidget>
-    </Row>,
-  );
 
-  // ========== SEDANG BERLANGSUNG ==========
-  if (activeItem) {
-    rows.push(
-      <Row key="active" gap={12}>
+      {activeItem ? (
         <FlexWidget
           style={{
             width: "match_parent",
-            backgroundColor: "#dbeafe",
-            borderRadius: 16,
-            padding: 12,
-            borderWidth: 1.5,
-            borderColor: "#60a5fa",
             flexDirection: "column",
+            backgroundColor: "#dbeafe",
+            borderRadius: 13,
+            padding: compact ? 8 : 9,
+            borderWidth: 1,
+            borderColor: "#60a5fa",
+            marginTop: 7,
           }}
         >
           <FlexWidget
@@ -219,215 +290,85 @@ export function TodayWidget({
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: 4,
             }}
           >
-            <FlexWidget style={{ flexDirection: "row", alignItems: "center" }}>
-              <FlexWidget
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: 4,
-                  backgroundColor: "#2563eb",
-                  marginRight: 6,
-                }}
-              />
-              <TextWidget
-                text="Sedang Berlangsung"
-                style={{ fontSize: 12, fontWeight: "600", color: "#1d4ed8" }}
-              />
-            </FlexWidget>
+            <TextWidget
+              text="Sedang berlangsung"
+              style={{ fontSize: 10, fontWeight: "600", color: "#1d4ed8" }}
+              maxLines={1}
+              truncate="END"
+            />
             <TextWidget
               text={`${progress}%`}
-              style={{ fontSize: 12, fontWeight: "700", color: "#1d4ed8" }}
+              style={{ fontSize: 10, fontWeight: "700", color: "#1d4ed8" }}
+              maxLines={1}
             />
           </FlexWidget>
-
           <TextWidget
             text={activeItem.title}
             style={{
-              fontSize: 15,
+              fontSize: 12,
               fontWeight: "700",
               color: "#1e293b",
-              marginBottom: 2,
+              marginTop: 2,
             }}
+            maxLines={1}
+            truncate="END"
           />
-
           <TextWidget
-            text={`${activeItem.startTime} - ${activeItem.endTime} • sisa ${formatRemaining(activeItem.endTime)}`}
-            style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}
+            text={`${activeItem.startTime}-${activeItem.endTime} · sisa ${formatRemaining(activeItem.endTime)}`}
+            style={{ fontSize: 9, color: "#64748b", marginTop: 1, marginBottom: 4 }}
+            maxLines={1}
+            truncate="END"
           />
-
           <ProgressBar progress={progress} />
         </FlexWidget>
-      </Row>,
-    );
-  }
+      ) : null}
 
-  // ========== JUDUL LIST ==========
-  rows.push(
-    <Row key="list-title" gap={6}>
       <TextWidget
-        text="Daftar Jadwal & Aksi"
+        text="Daftar jadwal"
         style={{
-          fontSize: 14,
+          fontSize: 12,
           fontWeight: "bold",
           color: "#1e293b",
-          marginLeft: 2,
+          marginTop: 9,
+          marginBottom: 1,
         }}
+        maxLines={1}
       />
-    </Row>,
-  );
 
-  // ========== ITEM JADWAL ==========
-  if (items.length === 0) {
-    rows.push(
-      <Row key="empty" gap={8}>
-        <FlexWidget
-          style={{
-            width: "match_parent",
-            padding: 16,
-            alignItems: "center",
-            backgroundColor: "#ffffff",
-            borderRadius: 14,
-          }}
-        >
-          <TextWidget
-            text="Tidak ada jadwal untuk hari ini."
-            style={{ fontSize: 13, color: "#94a3b8" }}
+      {items.length === 0 ? (
+        <TextWidget
+          text="Tidak ada jadwal untuk hari ini."
+          style={{ fontSize: 11, color: "#64748b", marginTop: 7 }}
+          maxLines={1}
+          truncate="END"
+        />
+      ) : (
+        visibleItems.map((item) => (
+          <RoutineRow
+            key={item.id}
+            item={item}
+            isActive={item.id === activeId}
+            isCompleted={item.status === "completed"}
+            isFailed={item.status === "failed"}
           />
-        </FlexWidget>
-      </Row>,
-    );
-  } else {
-    items.forEach((item) => {
-      const isActive = item.id === activeId;
-      const isCompleted = item.status === "completed";
-      const isFailed = item.status === "failed";
+        ))
+      )}
 
-      let bg: `#${string}` = "#ffffff";
-      let borderColor: `#${string}` = "#dbeafe";
-      let titleColor: `#${string}` = "#1e293b";
-
-      // Item aktif tetap memakai warna status (selesai/gagal) bila sudah ditandai
-      if (isCompleted) {
-        bg = "#eff6ff";
-        borderColor = "#93c5fd";
-        titleColor = "#64748b";
-      } else if (isFailed) {
-        bg = "#f1f5f9";
-        borderColor = "#cbd5e1";
-      }
-      if (isActive) {
-        bg = "#dbeafe";
-        borderColor = "#60a5fa";
-      }
-
-      rows.push(
-        <Row key={item.id} gap={8}>
-          <FlexWidget
-            style={{
-              width: "match_parent",
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              backgroundColor: bg,
-              borderRadius: 14,
-              padding: 12,
-              borderWidth: isActive ? 1.5 : 1,
-              borderColor: borderColor,
-            }}
-            clickAction="OPEN_APP"
-            accessibilityLabel={`Buka aplikasi untuk jadwal ${item.title}`}
-          >
-            <FlexWidget style={{ flex: 1, marginRight: 10 }}>
-              <TextWidget
-                text={`${item.startTime} - ${item.endTime}`}
-                style={{ fontSize: 11, color: "#64748b", fontWeight: "500" }}
-              />
-              <TextWidget
-                text={item.title}
-                style={{
-                  fontSize: 14,
-                  fontWeight: "600",
-                  color: titleColor,
-                  marginTop: 2,
-                }}
-              />
-
-              {/* Bar, persen, dan sisa waktu untuk item yang sedang aktif */}
-              {isActive && (
-                <FlexWidget
-                  style={{ width: "match_parent", flexDirection: "column" }}
-                >
-                  <ProgressBar progress={progress} marginTop={8} />
-                  <TextWidget
-                    text={`${progress}% berlangsung • sisa ${formatRemaining(item.endTime)}`}
-                    style={{
-                      fontSize: 11,
-                      fontWeight: "600",
-                      color: "#1d4ed8",
-                      marginTop: 4,
-                    }}
-                  />
-                </FlexWidget>
-              )}
-            </FlexWidget>
-
-            <FlexWidget
-              style={{
-                width: 54,
-                height: 26,
-                paddingHorizontal: 6,
-                borderRadius: 13,
-                backgroundColor: isCompleted
-                  ? "#2563eb"
-                  : isFailed
-                    ? "#475569"
-                    : "#eff6ff",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-              clickAction="TOGGLE_STATUS"
-              clickActionData={{ id: item.id }}
-              accessibilityLabel={`Ubah status ${item.title}`}
-            >
-              <TextWidget
-                text={isCompleted ? "✓" : isFailed ? "×" : "○"}
-                style={{
-                  fontSize: 13,
-                  color: isCompleted || isFailed ? "#ffffff" : "#1d4ed8",
-                  fontWeight: "600",
-                }}
-              />
-            </FlexWidget>
-          </FlexWidget>
-        </Row>,
-      );
-    });
-  }
-
-  return (
-    <FlexWidget
-      style={{
-        height: "match_parent",
-        width: "match_parent",
-        backgroundColor: "#eff6ff",
-        borderRadius: 20,
-        padding: 4,
-      }}
-      clickAction="OPEN_APP"
-      accessibilityLabel="Buka aplikasi Routine Daily"
-    >
-      {/* Scroll di paling luar: seluruh konten ada di dalam ListWidget ini */}
-      <ListWidget
-        style={{
-          height: "match_parent",
-          width: "match_parent",
-        }}
-      >
-        {rows}
-      </ListWidget>
+      {remainingCount > 0 ? (
+        <TextWidget
+          text={`+${remainingCount} jadwal lainnya · buka aplikasi`}
+          style={{
+            fontSize: 9,
+            color: "#1d4ed8",
+            fontWeight: "600",
+            marginTop: 6,
+          }}
+          maxLines={1}
+          truncate="END"
+        />
+      ) : null}
     </FlexWidget>
   );
 }

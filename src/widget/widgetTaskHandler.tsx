@@ -16,6 +16,8 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
           day={data.day}
           stats={data.stats}
           items={data.items}
+          width={props.widgetInfo.width}
+          height={props.widgetInfo.height}
         />,
       );
       break;
@@ -32,6 +34,8 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
             day={data.day}
             stats={data.stats}
             items={data.items}
+            width={props.widgetInfo.width}
+            height={props.widgetInfo.height}
           />,
         );
       }
