@@ -1,153 +1,180 @@
 # Routine Daily
 
-Routine Daily adalah aplikasi Android untuk menyusun rutinitas harian, menandai progres kegiatan, dan melihat jadwal hari ini melalui widget.
+Routine Daily is an Android app for planning your daily routine, tracking the status of each activity, and seeing today's schedule from a home screen widget.
 
-## Fitur
+## Features
 
-- Mengelola jadwal secara terpisah untuk setiap hari.
-- Menambahkan, mengedit, dan menghapus jadwal.
-- Mengubah status kegiatan dengan urutan **Belum → Selesai → Gagal → Belum**.
-- Melihat jumlah kegiatan yang selesai, gagal, atau belum dikerjakan pada hari ini.
-- Mengimpor jadwal dari JSON. Impor mengganti seluruh jadwal yang tersimpan.
-- Menampilkan progres dan jadwal hari ini pada widget Android yang menyesuaikan jumlah baris dengan ukurannya. Jika ada jadwal lain yang tidak ditampilkan, widget menunjukkan jumlahnya; ketuk jadwal atau area lainnya untuk membuka aplikasi, atau tombol status untuk mengubah status kegiatan.
-- Menerima notifikasi pengingat dan notifikasi kegiatan yang sedang berlangsung.
-- Menyimpan jadwal secara lokal di perangkat. Tidak ada jadwal contoh bawaan.
+- Keep a separate routine for each day of the week.
+- Add, edit, and delete routines.
+- Change a routine's status by tapping its icon. The status cycles **Pending → Completed → Failed → Pending**.
+- See how many routines are completed, failed, or pending today, plus your success rate (completed ÷ total routines for the day).
+- Import routines from JSON. An import replaces all saved routines.
+- Show today's stats and the routine in progress on an Android home screen widget. Tap the widget to open the app.
+- Receive a reminder 30 minutes before a newly added routine starts.
+- Show an ongoing notification with the routine in progress and its progress, updated every minute.
+- Store all data locally on the device. The app ships with no sample routines.
 
-## Menjalankan di Android
+## Running on Android
 
-### Emulator atau perangkat dengan development build
+### Emulator or device with a development build
 
-1. Pasang dependensi:
+1. Install dependencies:
 
    ```bash
    npm install
    ```
 
-2. Buka Android Studio dan jalankan emulator dari **Device Manager**, atau hubungkan perangkat Android dengan USB debugging aktif.
-3. Dari root proyek, jalankan:
+2. Open Android Studio and start an emulator from **Device Manager**, or connect an Android device with USB debugging enabled.
+3. From the project root, run:
 
    ```bash
    npm run android
    ```
 
-Perintah tersebut membangun dan memasang aplikasi debug, lalu menjalankannya di emulator atau perangkat yang tersedia.
+This builds and installs the debug app, then launches it on the emulator or connected device. Expo Go is not supported because the app uses native modules (Notifee and the Android widget).
 
-### Membuat APK dengan EAS
-
-Untuk membuat APK yang dapat diunduh dan dipasang di perangkat Android atau emulator:
+### Building an Android build with EAS
 
 ```bash
 npx eas-cli@latest login
 npx eas-cli@latest build --platform android --profile preview
 ```
 
-Setelah build selesai, unduh APK dari tautan yang ditampilkan EAS. Build EAS dilakukan di cloud.
+When the build finishes, download it from the link EAS displays. EAS builds run in the cloud.
 
-## Menggunakan aplikasi
+## Using the app
 
-### Mengelola jadwal
+The app has three tabs:
 
-1. Buka tab **Kelola Jadwal**.
-2. Pilih hari.
-3. Tambahkan kegiatan dengan judul, jam mulai, dan jam selesai.
-4. Gunakan ikon pensil untuk mengedit atau ikon tempat sampah untuk menghapus. Penghapusan meminta konfirmasi.
-5. Buka tab **Jadwal Hari Ini** untuk melihat kegiatan pada hari ini dan mengubah statusnya dengan ikon status.
+- **Today**: today's stats, the routine in progress (with a progress bar and time left), and the list of today's routines. Tap the icon next to a routine to change its status. Pull down to refresh.
+- **Manage**: pick a day, then add, edit, or delete routines for that day. Deleting asks for confirmation.
+- **Settings**: show the notification for the routine in progress now, import routines from JSON, or delete all routines.
 
-Waktu menggunakan format 24 jam `HH:mm`, misalnya `08:30`.
+### Managing routines
 
-### Mengimpor jadwal JSON
+1. Open the **Manage** tab.
+2. Select a day.
+3. Tap **Add** and enter a title, a start time, and an end time.
+4. Use the pencil icon to edit a routine or the trash icon to delete it.
 
-Buka **Pengaturan → Impor jadwal JSON**, masukkan array JSON, lalu pilih **Validasi dan impor**. Setiap jadwal yang diimpor memiliki status awal **Belum**.
+Times use the 24-hour `HH:mm` format, for example `08:30`. The start and end times must be different.
 
-Contoh jadwal untuk semua hari:
+### Importing routines from JSON
+
+Go to **Settings → Import routines from JSON**, paste a JSON array, then tap **Validate and import**. Every imported routine starts with the status **Pending**.
+
+Example for every day of the week:
 
 ```json
 [
   {
-    "day": "Minggu",
+    "day": "Sunday",
     "startTime": "08:00",
     "endTime": "09:00",
-    "title": "Olahraga ringan"
+    "title": "Light exercise"
   },
   {
-    "day": "Senin",
+    "day": "Monday",
     "startTime": "06:00",
     "endTime": "07:00",
-    "title": "Olahraga pagi"
+    "title": "Morning workout"
   },
   {
-    "day": "Selasa",
+    "day": "Tuesday",
     "startTime": "08:00",
     "endTime": "09:00",
-    "title": "Belajar"
+    "title": "Study"
   },
   {
-    "day": "Rabu",
+    "day": "Wednesday",
     "startTime": "09:00",
     "endTime": "10:00",
-    "title": "Membaca"
+    "title": "Reading"
   },
   {
-    "day": "Kamis",
+    "day": "Thursday",
     "startTime": "13:00",
     "endTime": "14:00",
-    "title": "Mengerjakan proyek"
+    "title": "Project work"
   },
   {
-    "day": "Jum'at",
+    "day": "Friday",
     "startTime": "16:00",
     "endTime": "17:00",
-    "title": "Belanja kebutuhan"
+    "title": "Grocery shopping"
   },
   {
-    "day": "Sabtu",
+    "day": "Saturday",
     "startTime": "10:00",
     "endTime": "11:00",
-    "title": "Membersihkan rumah"
+    "title": "Cleaning the house"
   }
 ]
 ```
 
-Format impor:
+Format rules:
 
-- Data utama harus berupa array JSON.
-- Setiap objek harus memiliki `day`, `startTime`, `endTime`, dan `title`.
-- `day` harus persis `Minggu`, `Senin`, `Selasa`, `Rabu`, `Kamis`, `Jum'at`, atau `Sabtu`.
-- Jam harus berformat 24 jam `HH:mm`; judul tidak boleh kosong, dan jam mulai tidak boleh sama dengan jam selesai.
-- `id` dan `status` tidak perlu disertakan.
-- Array kosong (`[]`) valid dan akan mengosongkan jadwal.
+- The top level must be a JSON array.
+- Each object must have `day`, `startTime`, `endTime`, and `title`.
+- `day` must be exactly `Sunday`, `Monday`, `Tuesday`, `Wednesday`, `Thursday`, `Friday`, or `Saturday` (case-sensitive).
+- Times must use the 24-hour `HH:mm` format. The title cannot be empty, and the start and end times cannot be the same.
+- `id` and `status` are not needed. Any `id` or `status` values in the file are ignored, and every routine is imported as **Pending**.
+- An empty array (`[]`) is valid and clears all routines.
 
-## Status dan penyimpanan
+## Widget
 
-- Jadwal dan statusnya tersimpan secara lokal di perangkat menggunakan AsyncStorage.
-- Setiap entri jadwal berlaku untuk satu hari.
-- Ketika tanggal berganti, status jadwal direset menjadi **Belum** saat data dimuat kembali.
-- Impor JSON mengganti semua jadwal yang ada; gunakan **Pengaturan → Hapus semua jadwal** untuk menghapus seluruh jadwal secara manual.
+Add the **Today's Routine** widget from your launcher's widget picker. It shows:
 
-## Arsitektur
+- Today's counts for completed, failed, and pending routines, plus the success rate.
+- The routine in progress, with its progress bar and time left, or a message when nothing is in progress.
 
-Aplikasi menggunakan layered architecture:
+Tapping the widget opens the app. The widget is read-only: change statuses in the app. It refreshes about every 30 minutes and whenever the app updates the routines.
 
-| Lapisan | Tanggung jawab | Lokasi |
+## Notifications
+
+- **Reminder**: when you add a routine in the app, the app schedules a one-time notification 30 minutes before its next start time. Editing a routine does not reschedule its reminder, and routines imported from JSON do not get reminders.
+- **Ongoing notification**: the app keeps a persistent notification showing the routine in progress, its progress, and the time left. It is updated every minute and starts when the app opens. The notification shows "No routine in progress" when nothing is scheduled.
+- **Show notification now**: in **Settings**, shows the ongoing notification immediately.
+
+Allow notifications when the app asks for permission. Otherwise, reminders and the ongoing notification will not appear.
+
+## Status and storage
+
+- Routines and their statuses are saved locally on the device with AsyncStorage.
+- Each routine applies to a single day of the week.
+- When the date changes, all statuses are reset to **Pending** the next time the data loads.
+- Importing JSON replaces all saved routines. To remove everything without importing, use **Settings → Delete all routines**.
+- Data saved by earlier versions of the app, which used Indonesian day names such as `Senin`, is converted to the English day names automatically.
+
+## Architecture
+
+The app uses a layered architecture:
+
+| Layer | Responsibility | Location |
 |---|---|---|
-| Presentation | Layar navigasi dan komponen antarmuka | `app/`, `src/components/` |
-| Service | Operasi jadwal, notifikasi, dan pembaruan widget | `src/services/`, `src/widget/` |
-| Domain | Tipe data dan aturan bisnis jadwal | `src/domain/`, `src/types/` |
-| Data | Penyimpanan jadwal lokal | `src/data/` |
+| Presentation | Navigation screens and UI components | `app/`, `src/components/` |
+| Service | Routine operations, notifications, and widget updates | `src/services/`, `src/widget/` |
+| Domain | Data types and routine business rules | `src/domain/`, `src/types/` |
+| Data | Local storage of routines | `src/data/` |
 
-Alur data jadwal:
+Data flow for routines:
 
 ```text
-Layar / Widget → Service → Domain / Repository → AsyncStorage
+Screen / Widget → Service → Domain / Repository → AsyncStorage
 ```
 
-## Teknologi
+Entry points:
 
-- Expo SDK 58
-- React Native 0.88 dan TypeScript
-- Expo Router
-- AsyncStorage
-- Lucide React Native
-- Notifee dan Expo Notifications
-- `react-native-android-widget`
-- Expo Application Services (EAS)
+- `index.ts` loads Expo Router and registers the widget task handler.
+- `app/_layout.tsx` requests notification permission and starts the ongoing notification on launch.
+- `plugins/withNotifeeForegroundService.js` is an Expo config plugin that configures the foreground service for the ongoing notification.
+
+## Technology
+
+- Expo SDK 58 and React Native 0.88 with TypeScript
+- Expo Router for navigation
+- AsyncStorage for local storage
+- Lucide React Native for icons
+- Notifee (`@notifee/react-native`) for the ongoing notification, and Expo Notifications for reminders
+- `react-native-android-widget` for the home screen widget
+- Expo Application Services (EAS) for cloud builds

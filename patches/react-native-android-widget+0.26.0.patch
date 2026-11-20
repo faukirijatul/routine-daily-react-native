@@ -1,0 +1,47 @@
+diff --git a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java
+index f1e16e7..7793ef7 100644
+--- a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java
++++ b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java
+@@ -45,31 +45,27 @@ public class RNWidgetProvider extends AppWidgetProvider {
+             return;
+         }
+ 
++        String clickAction = incomingIntent.getStringExtra("clickAction");
++        if ("OPEN_APP".equals(clickAction)) {
++            openApp(context);
++            return;
++        }
++        if ("OPEN_URI".equals(clickAction)) {
++            openUri(context, incomingIntent.getBundleExtra("clickActionData").getString("uri"));
++            return;
++        }
++
+         int widgetId = incomingIntent.getIntExtra("widgetId", -1);
+ 
+         if (RNWidgetSizing.correct(context, widgetId, incomingIntent)) {
+             RNWidgetSizing.updateStoredSize(context, widgetId);
+             Data resizeData = RNWidgetJsCommunication.buildData(context, getClass().getSimpleName(), widgetId, "WIDGET_RESIZED");
+             RNWidgetJsCommunication.startBackgroundTask(context, resizeData);
+-            // Before correction, the image and hit areas may disagree. Consume this tap
+-            // instead of executing a potentially unintended custom or native action.
+             return;
+         }
+-        // A second tap can arrive before the corrective render replaces the old overlays.
+         if (RNWidgetSizing.hasOutdatedSize(context, widgetId, incomingIntent)) return;
+-        String clickAction = incomingIntent.getStringExtra("clickAction");
+         if (clickAction != null) {
+-            switch (clickAction) {
+-                case "OPEN_APP":
+-                    openApp(context);
+-                    break;
+-                case "OPEN_URI":
+-                    openUri(context, incomingIntent.getBundleExtra("clickActionData").getString("uri"));
+-                    break;
+-                default:
+-                    handleWidgetClick(context, incomingIntent, widgetId);
+-                    return;
+-            }
++            handleWidgetClick(context, incomingIntent, widgetId);
+         }
+     }
+ 

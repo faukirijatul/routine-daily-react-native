@@ -10,16 +10,16 @@ import { refreshWidget } from "../../src/widget/updateWidget";
 
 const JSON_EXAMPLE = `[
   {
-    "day": "Senin",
+    "day": "Monday",
     "startTime": "08:00",
     "endTime": "09:00",
-    "title": "Belajar"
+    "title": "Study"
   },
   {
-    "day": "Selasa",
+    "day": "Tuesday",
     "startTime": "10:00",
     "endTime": "11:00",
-    "title": "Olahraga"
+    "title": "Exercise"
   }
 ]`;
 
@@ -39,15 +39,15 @@ export default function SettingsScreen() {
       const title = await showCurrentTaskNow();
       if (!title) {
         setFeedback({
-          title: "Tidak ada jadwal",
-          message: "Saat ini tidak ada jadwal yang sedang berjalan.",
+          title: "No routine",
+          message: "There is no routine in progress right now.",
         });
       }
     } catch (error) {
-      console.error("Gagal menampilkan notifikasi:", error);
+      console.error("Failed to show notification:", error);
       setFeedback({
-        title: "Gagal menampilkan notifikasi",
-        message: "Silakan periksa izin notifikasi lalu coba lagi.",
+        title: "Failed to show notification",
+        message: "Check the notification permission and try again.",
       });
     }
   };
@@ -62,16 +62,16 @@ export default function SettingsScreen() {
       setImportVisible(false);
       const importedDays = [...new Set(routines.map((routine) => routine.day))];
       setFeedback({
-        title: "Impor berhasil",
+        title: "Import successful",
         message: routines.length
-          ? `${routines.length} jadwal berhasil diimpor untuk hari ${importedDays.join(", ")}. Buka Kelola Jadwal dan pilih salah satu hari tersebut.`
-          : "Tidak ada jadwal di dalam JSON, jadi daftar jadwal sekarang kosong.",
+          ? `${routines.length} ${routines.length === 1 ? "routine" : "routines"} imported for ${importedDays.join(", ")}. Open Manage Routines and select one of those days.`
+          : "The JSON contains no routines, so the routine list is now empty.",
       });
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Jadwal tidak dapat diimpor.";
+        error instanceof Error ? error.message : "The routines could not be imported.";
       setImportVisible(false);
-      setFeedback({ title: "Impor gagal", message });
+      setFeedback({ title: "Import failed", message });
     }
   };
 
@@ -82,30 +82,30 @@ export default function SettingsScreen() {
       await syncCurrentTaskNotifications();
       refreshWidget();
       setFeedback({
-        title: "Jadwal dihapus",
-        message: "Semua jadwal telah dihapus.",
+        title: "Routines deleted",
+        message: "All routines have been deleted.",
       });
     } catch (error) {
-      console.error("Gagal menghapus jadwal:", error);
+      console.error("Failed to delete routines:", error);
       setFeedback({
-        title: "Gagal menghapus jadwal",
-        message: "Jadwal tidak dapat dihapus. Silakan coba lagi.",
+        title: "Failed to delete routines",
+        message: "The routines could not be deleted. Please try again.",
       });
     }
   };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
-      <Text style={styles.title}>Pengaturan</Text>
+      <Text style={styles.title}>Settings</Text>
 
       <TouchableOpacity onPress={handleShowNotification} style={styles.card}>
         <View style={styles.cardIcon}>
           <Bell size={21} color="#2563eb" strokeWidth={2} />
         </View>
         <View style={styles.cardContent}>
-          <Text style={styles.cardTitle}>Tampilkan notifikasi sekarang</Text>
+          <Text style={styles.cardTitle}>Show notification now</Text>
           <Text style={styles.cardSubtitle}>
-            Munculkan notifikasi jadwal yang sedang berjalan
+            Show the notification for the routine in progress
           </Text>
         </View>
       </TouchableOpacity>
@@ -118,9 +118,9 @@ export default function SettingsScreen() {
           <FileJson2 size={21} color="#2563eb" strokeWidth={2} />
         </View>
         <View style={styles.cardContent}>
-          <Text style={styles.cardTitle}>Impor jadwal JSON</Text>
+          <Text style={styles.cardTitle}>Import routines from JSON</Text>
           <Text style={styles.cardSubtitle}>
-            Mengganti semua jadwal dengan data JSON yang valid
+            Replace all routines with valid JSON data
           </Text>
         </View>
       </TouchableOpacity>
@@ -133,25 +133,25 @@ export default function SettingsScreen() {
           <Trash2 size={21} color="#2563eb" strokeWidth={2} />
         </View>
         <View style={styles.cardContent}>
-          <Text style={styles.cardTitle}>Hapus semua jadwal</Text>
+          <Text style={styles.cardTitle}>Delete all routines</Text>
           <Text style={styles.cardSubtitle}>
-            Kosongkan jadwal untuk semua hari
+            Clear the routines for every day
           </Text>
         </View>
       </TouchableOpacity>
 
       <AppModal
         visible={importVisible}
-        title="Impor jadwal JSON"
-        description="Format harus berupa array. Setiap jadwal memerlukan day, startTime, endTime, dan title. Status akan direset."
+        title="Import routines from JSON"
+        description="The format must be an array. Each routine requires day, startTime, endTime, and title. Statuses will be reset."
         actions={[
           {
-            label: "Batal",
+            label: "Cancel",
             onPress: () => setImportVisible(false),
             variant: "secondary",
           },
           {
-            label: "Validasi dan impor",
+            label: "Validate and import",
             onPress: handleImport,
             variant: "primary",
           },
@@ -173,16 +173,16 @@ export default function SettingsScreen() {
 
       <AppModal
         visible={clearConfirmationVisible}
-        title="Hapus semua jadwal?"
-        description="Semua jadwal untuk seluruh hari akan dihapus. Tindakan ini tidak dapat dibatalkan."
+        title="Delete all routines?"
+        description="All routines for every day will be deleted. This action cannot be undone."
         actions={[
           {
-            label: "Batal",
+            label: "Cancel",
             onPress: () => setClearConfirmationVisible(false),
             variant: "secondary",
           },
           {
-            label: "Hapus semua",
+            label: "Delete all",
             onPress: handleClear,
             variant: "destructive",
           },
@@ -196,7 +196,7 @@ export default function SettingsScreen() {
         description={feedback?.message}
         actions={[
           {
-            label: "Mengerti",
+            label: "OK",
             onPress: () => setFeedback(null),
             variant: "primary",
           },

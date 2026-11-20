@@ -41,7 +41,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Jadwal Hari Ini",
+          title: "Today",
           tabBarIcon: ({ color, size, focused }) => (
             <House color={color} size={size} strokeWidth={focused ? 2.4 : 1.8} />
           ),
@@ -50,7 +50,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="routine"
         options={{
-          title: "Kelola Jadwal",
+          title: "Manage",
           tabBarIcon: ({ color, size, focused }) => (
             <CalendarDays
               color={color}
@@ -63,7 +63,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Pengaturan",
+          title: "Settings",
           tabBarIcon: ({ color, size, focused }) => (
             <Settings2
               color={color}

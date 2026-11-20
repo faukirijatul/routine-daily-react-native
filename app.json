@@ -15,6 +15,7 @@
       "package": "com.fauki.routineapp",
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#2563eb"
       },
       "predictiveBackGestureEnabled": false,
@@ -33,6 +34,7 @@
     "plugins": [
       "expo-router",
       "./plugins/withNotifeeForegroundService",
+      "./plugins/withNotificationIcon",
       [
         "expo-splash-screen",
         {
@@ -47,13 +49,14 @@
           "widgets": [
             {
               "name": "TodayRoutine",
-              "label": "Jadwal Hari Ini",
-              "description": "Statistik & daftar rutinitas hari ini",
+              "label": "Today's Routine",
+              "description": "Today's stats and the routine in progress",
+              "previewImage": "./assets/widget-preview/today-routine.png",
               "minWidth": "250dp",
-              "minHeight": "350dp",
+              "minHeight": "180dp",
               "targetCellWidth": 4,
-              "targetCellHeight": 5,
-              "resizeMode": "horizontal|vertical",
+              "targetCellHeight": 3,
+              "resizeMode": "horizontal",
               "updatePeriodMillis": 1800000
             }
           ]

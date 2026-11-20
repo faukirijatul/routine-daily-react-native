@@ -43,10 +43,10 @@ export default function RoutineScreen() {
     try {
       setRoutines(await loadRoutines());
     } catch (error) {
-      console.error("Gagal memuat jadwal:", error);
+      console.error("Failed to load routines:", error);
       setFeedback({
-        title: "Jadwal gagal dimuat",
-        message: "Periksa penyimpanan aplikasi lalu coba lagi.",
+        title: "Failed to load routines",
+        message: "Check the app storage and try again.",
       });
     }
   }, []);
@@ -84,11 +84,11 @@ export default function RoutineScreen() {
 
   const handleSave = async () => {
     if (!title.trim() || !isValidTime(startTime) || !isValidTime(endTime)) {
-      setFormError("Isi judul dan waktu menggunakan format HH:mm yang valid.");
+      setFormError("Enter a title and times in a valid HH:mm format.");
       return;
     }
     if (startTime === endTime) {
-      setFormError("Jam mulai dan selesai tidak boleh sama.");
+      setFormError("Start and end time cannot be the same.");
       return;
     }
     setFormError(null);
@@ -118,11 +118,11 @@ export default function RoutineScreen() {
       setModalVisible(false);
       if (newItem) await scheduleRoutineNotification(newItem);
     } catch (error) {
-      console.error("Gagal menyimpan jadwal:", error);
+      console.error("Failed to save routine:", error);
       setModalVisible(false);
       setFeedback({
-        title: "Gagal menyimpan",
-        message: "Jadwal tidak dapat disimpan. Silakan coba lagi.",
+        title: "Failed to save",
+        message: "The routine could not be saved. Please try again.",
       });
     }
   };
@@ -134,10 +134,10 @@ export default function RoutineScreen() {
     try {
       await saveData(updated);
     } catch (error) {
-      console.error("Gagal menghapus jadwal:", error);
+      console.error("Failed to delete routine:", error);
       setFeedback({
-        title: "Gagal menghapus",
-        message: "Jadwal tidak dapat dihapus. Silakan coba lagi.",
+        title: "Failed to delete",
+        message: "The routine could not be deleted. Please try again.",
       });
     }
   };
@@ -148,13 +148,13 @@ export default function RoutineScreen() {
     <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
       {/* Header */}
       <View style={styles.headerRow}>
-        <Text style={styles.headerTitle}>Kelola Jadwal</Text>
+        <Text style={styles.headerTitle}>Manage Routines</Text>
         <TouchableOpacity onPress={handleOpenAdd} style={styles.addButton}>
-          <Text style={styles.addButtonText}>Tambah</Text>
+          <Text style={styles.addButtonText}>Add</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Tabs Filter Hari */}
+      {/* Day filter tabs */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -182,7 +182,7 @@ export default function RoutineScreen() {
         ))}
       </ScrollView>
 
-      {/* List Rutinitas */}
+      {/* Routine list */}
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
@@ -191,7 +191,7 @@ export default function RoutineScreen() {
         {filteredList.length === 0 && (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyText}>
-              Belum ada jadwal untuk hari {selectedDay}.
+              No routines for {selectedDay}.
             </Text>
           </View>
         )}
@@ -214,7 +214,7 @@ export default function RoutineScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel={`Hapus ${item.title}`}
+                accessibilityLabel={`Delete ${item.title}`}
                 onPress={() => setDeleteTarget(item)}
                 style={styles.iconBtn}
               >
@@ -225,29 +225,29 @@ export default function RoutineScreen() {
         ))}
       </ScrollView>
 
-      {/* Modal Form Tambah/Edit */}
+      {/* Add/Edit form modal */}
       <AppModal
         visible={modalVisible}
-        title={editId ? "Edit Jadwal" : "Tambah Jadwal Baru"}
+        title={editId ? "Edit Routine" : "New Routine"}
         description={formError ?? undefined}
         actions={[
           {
-            label: "Batal",
+            label: "Cancel",
             onPress: () => setModalVisible(false),
             variant: "secondary",
           },
           {
-            label: "Simpan",
+            label: "Save",
             onPress: handleSave,
             variant: "primary",
           },
         ]}
         onRequestClose={() => setModalVisible(false)}
       >
-        <Text style={styles.label}>Judul Kegiatan</Text>
+        <Text style={styles.label}>Activity Title</Text>
         <TextInput
           style={styles.input}
-          placeholder="Contoh: Belajar Coding"
+          placeholder="e.g. Study coding"
           placeholderTextColor="#94a3b8"
           value={title}
           onChangeText={setTitle}
@@ -255,7 +255,7 @@ export default function RoutineScreen() {
         />
         <View style={styles.timeInputRow}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.label}>Jam Mulai (HH:mm)</Text>
+            <Text style={styles.label}>Start Time (HH:mm)</Text>
             <TextInput
               style={styles.input}
               placeholder="08:00"
@@ -267,7 +267,7 @@ export default function RoutineScreen() {
             />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.label}>Jam Selesai (HH:mm)</Text>
+            <Text style={styles.label}>End Time (HH:mm)</Text>
             <TextInput
               style={styles.input}
               placeholder="09:00"
@@ -283,20 +283,20 @@ export default function RoutineScreen() {
 
       <AppModal
         visible={deleteTarget !== null}
-        title="Hapus jadwal?"
+        title="Delete routine?"
         description={
           deleteTarget
-            ? `Jadwal "${deleteTarget.title}" akan dihapus. Tindakan ini tidak dapat dibatalkan.`
+            ? `"${deleteTarget.title}" will be deleted. This action cannot be undone.`
             : undefined
         }
         actions={[
           {
-            label: "Batal",
+            label: "Cancel",
             onPress: () => setDeleteTarget(null),
             variant: "secondary",
           },
           {
-            label: "Hapus",
+            label: "Delete",
             onPress: handleDelete,
             variant: "destructive",
           },
@@ -310,7 +310,7 @@ export default function RoutineScreen() {
         description={feedback?.message}
         actions={[
           {
-            label: "Mengerti",
+            label: "OK",
             onPress: () => setFeedback(null),
             variant: "primary",
           },

@@ -1,11 +1,11 @@
 export const DAYS_OF_WEEK = [
-  "Minggu",
-  "Senin",
-  "Selasa",
-  "Rabu",
-  "Kamis",
-  "Jum'at",
-  "Sabtu",
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
 ] as const;
 
 export type DayOfWeek = (typeof DAYS_OF_WEEK)[number];

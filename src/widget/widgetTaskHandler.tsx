@@ -17,28 +17,8 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
           stats={data.stats}
           items={data.items}
           width={props.widgetInfo.width}
-          height={props.widgetInfo.height}
         />,
       );
-      break;
-    }
-
-    case "WIDGET_CLICK": {
-      if (props.clickAction === "TOGGLE_STATUS") {
-        const id = props.clickActionData?.id;
-        if (typeof id !== "string") break;
-        await toggleRoutineStatus(id);
-        const data = await getWidgetData();
-        props.renderWidget(
-          <TodayWidget
-            day={data.day}
-            stats={data.stats}
-            items={data.items}
-            width={props.widgetInfo.width}
-            height={props.widgetInfo.height}
-          />,
-        );
-      }
       break;
     }
 

@@ -42,35 +42,35 @@ export function parseRoutineJson(json: string): RoutineItem[] {
   try {
     parsed = JSON.parse(json);
   } catch {
-    throw new Error("JSON tidak valid. Periksa tanda kutip dan koma.");
+    throw new Error("Invalid JSON. Check the quotes and commas.");
   }
 
   if (!Array.isArray(parsed)) {
-    throw new Error("Data JSON harus berupa array jadwal.");
+    throw new Error("JSON data must be an array of routines.");
   }
 
   return parsed.map((entry, index) => {
     if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
-      throw new Error(`Jadwal ke-${index + 1} harus berupa objek.`);
+      throw new Error(`Routine #${index + 1} must be an object.`);
     }
 
     const item = entry as Record<string, unknown>;
     if (!isDayOfWeek(item.day)) {
       throw new Error(
-        `Hari pada jadwal ke-${index + 1} harus salah satu dari: ${DAYS_OF_WEEK.join(", ")}.`,
+        `Day of routine #${index + 1} must be one of: ${DAYS_OF_WEEK.join(", ")}.`,
       );
     }
     if (typeof item.title !== "string" || !item.title.trim()) {
-      throw new Error(`Judul jadwal ke-${index + 1} tidak boleh kosong.`);
+      throw new Error(`Title of routine #${index + 1} cannot be empty.`);
     }
     if (typeof item.startTime !== "string" || !isValidTime(item.startTime)) {
-      throw new Error(`Jam mulai jadwal ke-${index + 1} harus berformat HH:mm.`);
+      throw new Error(`Start time of routine #${index + 1} must use HH:mm format.`);
     }
     if (typeof item.endTime !== "string" || !isValidTime(item.endTime)) {
-      throw new Error(`Jam selesai jadwal ke-${index + 1} harus berformat HH:mm.`);
+      throw new Error(`End time of routine #${index + 1} must use HH:mm format.`);
     }
     if (item.startTime === item.endTime) {
-      throw new Error(`Jam mulai dan selesai jadwal ke-${index + 1} tidak boleh sama.`);
+      throw new Error(`Start and end time of routine #${index + 1} cannot be the same.`);
     }
 
     return {

@@ -6,6 +6,22 @@ export const ROUTINE_STORAGE_KEY = "@routine_items_v2";
 const LEGACY_STORAGE_KEY = "@routine_items_v1";
 const ACTIVE_DATE_KEY = "@routine_active_date_v1";
 
+// Earlier versions of the app stored day names in Indonesian. Map them to the
+// English names so existing data keeps working after upgrading.
+const LEGACY_DAY_NAMES = new Map<string, DayOfWeek>([
+  ["Minggu", "Sunday"],
+  ["Senin", "Monday"],
+  ["Selasa", "Tuesday"],
+  ["Rabu", "Wednesday"],
+  ["Kamis", "Thursday"],
+  ["Jum'at", "Friday"],
+  ["Sabtu", "Saturday"],
+]);
+
+function normalizeDay(value: unknown): unknown {
+  return typeof value === "string" ? (LEGACY_DAY_NAMES.get(value) ?? value) : value;
+}
+
 type LegacyRoutine = {
   id: string;
   dayGroup: string;
@@ -21,21 +37,23 @@ function resetStatuses(items: RoutineItem[]): RoutineItem[] {
 
 function migrateLegacyItems(value: unknown): RoutineItem[] {
   if (!Array.isArray(value)) {
-    throw new Error("Data jadwal lama tidak valid dan tidak dapat dimigrasikan.");
+    throw new Error("Legacy routine data is invalid and cannot be migrated.");
   }
 
   const migrated: RoutineItem[] = [];
   for (const [index, raw] of value.entries()) {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
-      throw new Error(`Data jadwal lama ke-${index + 1} tidak valid.`);
+      throw new Error(`Legacy routine #${index + 1} is invalid.`);
     }
 
     const item = raw as LegacyRoutine;
+    // "Senin-Kamis" is the old Indonesian label for Monday through Thursday.
+    const legacyDay = normalizeDay(item.dayGroup);
     const days: DayOfWeek[] =
       item.dayGroup === "Senin-Kamis"
-        ? ["Senin", "Selasa", "Rabu", "Kamis"]
-        : isDayOfWeek(item.dayGroup)
-          ? [item.dayGroup]
+        ? ["Monday", "Tuesday", "Wednesday", "Thursday"]
+        : isDayOfWeek(legacyDay)
+          ? [legacyDay]
           : [];
 
     if (
@@ -45,7 +63,7 @@ function migrateLegacyItems(value: unknown): RoutineItem[] {
       typeof item.startTime !== "string" ||
       typeof item.endTime !== "string"
     ) {
-      throw new Error(`Data jadwal lama ke-${index + 1} tidak valid.`);
+      throw new Error(`Legacy routine #${index + 1} is invalid.`);
     }
 
     for (const day of days) {
@@ -66,7 +84,7 @@ function migrateLegacyItems(value: unknown): RoutineItem[] {
 function parseStoredItems(json: string): RoutineItem[] {
   const items: unknown = JSON.parse(json);
   if (!Array.isArray(items)) {
-    throw new Error("Data jadwal tersimpan tidak valid.");
+    throw new Error("Stored routine data is invalid.");
   }
   for (const [index, value] of items.entries()) {
     const item =
@@ -76,17 +94,20 @@ function parseStoredItems(json: string): RoutineItem[] {
     if (
       !item ||
       typeof item.id !== "string" ||
-      !isDayOfWeek(item.day) ||
+      !isDayOfWeek(normalizeDay(item.day)) ||
       typeof item.startTime !== "string" ||
       typeof item.endTime !== "string" ||
       typeof item.title !== "string" ||
       typeof item.status !== "string" ||
       !["pending", "completed", "failed"].includes(item.status)
     ) {
-      throw new Error(`Data jadwal tersimpan ke-${index + 1} tidak valid.`);
+      throw new Error(`Stored routine #${index + 1} is invalid.`);
     }
   }
-  return items as RoutineItem[];
+  return items.map((item) => ({
+    ...item,
+    day: normalizeDay(item.day),
+  })) as RoutineItem[];
 }
 
 export async function loadRoutineRecords(): Promise<RoutineItem[]> {

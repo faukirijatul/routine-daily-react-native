@@ -49,7 +49,7 @@ function formatRemaining(endTime: string): string {
   );
   const hours = Math.floor(minutesUntilEnd / 60);
   const minutes = minutesUntilEnd % 60;
-  return hours ? `${hours}j ${minutes}m` : `${minutes}m`;
+  return hours ? `${hours}h ${minutes}m` : `${minutes}m`;
 }
 
 const EMPTY_STATS: DailyStats = {
@@ -60,9 +60,9 @@ const EMPTY_STATS: DailyStats = {
 };
 
 const STATUS_LABELS: Record<RoutineStatus, string> = {
-  pending: "Belum",
-  completed: "Selesai",
-  failed: "Gagal",
+  pending: "Pending",
+  completed: "Completed",
+  failed: "Failed",
 };
 
 export default function DashboardScreen() {
@@ -86,14 +86,14 @@ export default function DashboardScreen() {
     useCallback(() => {
       void Promise.resolve()
         .then(loadData)
-        .catch((error) => console.error("Gagal memuat jadwal:", error));
+        .catch((error) => console.error("Failed to load routines:", error));
     }, [loadData]),
   );
 
   useEffect(() => {
     const interval = setInterval(() => {
       setNowTick((tick) => tick + 1);
-      loadData().catch((error) => console.error("Gagal memperbarui jadwal:", error));
+      loadData().catch((error) => console.error("Failed to refresh routines:", error));
       refreshWidget();
     }, 60_000);
     return () => clearInterval(interval);
@@ -104,7 +104,7 @@ export default function DashboardScreen() {
       if (state === "active") {
         setNowTick((tick) => tick + 1);
         loadData().catch((error) =>
-          console.error("Gagal memperbarui jadwal:", error),
+          console.error("Failed to refresh routines:", error),
         );
         refreshWidget();
       }
@@ -118,7 +118,7 @@ export default function DashboardScreen() {
       await loadData();
       refreshWidget();
     } catch (error) {
-      console.error("Gagal memperbarui jadwal:", error);
+      console.error("Failed to refresh routines:", error);
     } finally {
       setRefreshing(false);
     }
@@ -132,7 +132,7 @@ export default function DashboardScreen() {
       setStats(getDailyStats(todayRoutines));
       refreshWidget();
     } catch (error) {
-      console.error("Gagal mengubah status jadwal:", error);
+      console.error("Failed to change routine status:", error);
     }
   };
 
@@ -154,30 +154,30 @@ export default function DashboardScreen() {
     >
       <View style={styles.summaryCard}>
         <View style={styles.summaryHeader}>
-          <Text style={styles.summaryTitle}>Jadwal Hari Ini</Text>
+          <Text style={styles.summaryTitle}>{"Today's Routine"}</Text>
           <View style={styles.dayBadge}>
             <Text style={styles.dayText}>{currentDay}</Text>
           </View>
         </View>
-        <Text style={styles.summarySubtitle}>Ringkasan rutinitas harian</Text>
+        <Text style={styles.summarySubtitle}>Daily routine summary</Text>
         <View style={styles.statsRow}>
-          <Stat value={stats.completed} label="Selesai" />
-          <Stat value={stats.failed} label="Gagal" />
-          <Stat value={stats.pending} label="Belum" />
-          <Stat value={`${stats.percentage}%`} label="Berhasil" />
+          <Stat value={stats.completed} label="Completed" />
+          <Stat value={stats.failed} label="Failed" />
+          <Stat value={stats.pending} label="Pending" />
+          <Stat value={`${stats.percentage}%`} label="Success" />
         </View>
       </View>
 
       {activeItem && (
         <View style={styles.activeCard}>
           <View style={styles.activeHeader}>
-            <Text style={styles.activeLabel}>Sedang berlangsung</Text>
+            <Text style={styles.activeLabel}>In progress</Text>
             <Text style={styles.activeProgress}>{progress}%</Text>
           </View>
           <Text style={styles.activeTitle}>{activeItem.title}</Text>
           <Text style={styles.activeTime}>
-            {activeItem.startTime} - {activeItem.endTime} · sisa{" "}
-            {formatRemaining(activeItem.endTime)}
+            {activeItem.startTime} - {activeItem.endTime} · {formatRemaining(activeItem.endTime)}{" "}
+            left
           </Text>
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${progress}%` }]} />
@@ -185,10 +185,10 @@ export default function DashboardScreen() {
         </View>
       )}
 
-      <Text style={styles.sectionTitle}>Daftar jadwal</Text>
+      <Text style={styles.sectionTitle}>Routine list</Text>
       {todayList.length === 0 ? (
         <View style={styles.emptyCard}>
-          <Text style={styles.emptyText}>Belum ada jadwal untuk hari ini.</Text>
+          <Text style={styles.emptyText}>No routines for today.</Text>
         </View>
       ) : (
         todayList.map((item) => {
@@ -223,15 +223,14 @@ export default function DashboardScreen() {
                       />
                     </View>
                     <Text style={styles.progressText}>
-                      {progress}% berlangsung · sisa{" "}
-                      {formatRemaining(item.endTime)}
+                      {progress}% elapsed · {formatRemaining(item.endTime)} left
                     </Text>
                   </>
                 )}
               </View>
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel={`Ubah status ${item.title}, saat ini ${STATUS_LABELS[item.status]}`}
+                accessibilityLabel={`Change status of ${item.title}, currently ${STATUS_LABELS[item.status]}`}
                 onPress={() => toggleStatus(item.id)}
                 style={[
                   styles.statusButton,

@@ -20,7 +20,7 @@ module.exports = (config) =>
         {
           $: {
             "android:name": "android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE",
-            "android:value": "Menampilkan progres jadwal yang sedang berjalan",
+            "android:value": "Shows the progress of the routine in progress",
           },
         },
       ],

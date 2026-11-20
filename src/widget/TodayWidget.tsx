@@ -1,7 +1,4 @@
-import {
-  FlexWidget,
-  TextWidget,
-} from "react-native-android-widget";
+import { FlexWidget, TextWidget } from "react-native-android-widget";
 import { DailyStats, RoutineItem } from "../types/routine";
 
 function timeToMinutes(time: string): number {
@@ -38,7 +35,7 @@ function formatRemaining(endTime: string): string {
   const diff = Math.max(0, timeToMinutes(endTime) - nowMin);
   const h = Math.floor(diff / 60);
   const m = diff % 60;
-  return h > 0 ? `${h}j ${m}m` : `${m}m`;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
 function ProgressBar({ progress }: { progress: number }) {
@@ -65,13 +62,7 @@ function ProgressBar({ progress }: { progress: number }) {
   );
 }
 
-function Stat({
-  value,
-  label,
-}: {
-  value: string;
-  label: string;
-}) {
+function Stat({ value, label }: { value: string; label: string }) {
   return (
     <FlexWidget style={{ flex: 1, alignItems: "center" }}>
       <TextWidget
@@ -90,125 +81,19 @@ function Stat({
   );
 }
 
-function RoutineRow({
-  item,
-  isActive,
-  isCompleted,
-  isFailed,
-}: {
-  item: RoutineItem;
-  isActive: boolean;
-  isCompleted: boolean;
-  isFailed: boolean;
-}) {
-  const backgroundColor = isActive
-    ? "#dbeafe"
-    : isCompleted
-      ? "#eff6ff"
-      : isFailed
-        ? "#f1f5f9"
-        : "#ffffff";
-  const borderColor = isActive
-    ? "#60a5fa"
-    : isCompleted
-      ? "#93c5fd"
-      : isFailed
-        ? "#cbd5e1"
-        : "#dbeafe";
-  const statusColor = isCompleted
-    ? "#2563eb"
-    : isFailed
-      ? "#475569"
-      : "#eff6ff";
-
-  return (
-    <FlexWidget
-      style={{
-        width: "match_parent",
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor,
-        borderRadius: 12,
-        padding: 8,
-        borderWidth: 1,
-        borderColor,
-        marginTop: 6,
-      }}
-      clickAction="OPEN_APP"
-      accessibilityLabel={`Buka aplikasi untuk jadwal ${item.title}`}
-    >
-      <FlexWidget style={{ flex: 1, marginRight: 8 }}>
-        <TextWidget
-          text={`${item.startTime} - ${item.endTime}`}
-          style={{ fontSize: 10, color: "#64748b", fontWeight: "500" }}
-          maxLines={1}
-          truncate="END"
-        />
-        <TextWidget
-          text={item.title}
-          style={{
-            fontSize: 12,
-            fontWeight: "600",
-            color: isCompleted ? "#64748b" : "#1e293b",
-            marginTop: 1,
-          }}
-          maxLines={1}
-          truncate="END"
-        />
-      </FlexWidget>
-      <FlexWidget
-        style={{
-          width: 34,
-          height: 26,
-          borderRadius: 13,
-          backgroundColor: statusColor,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-        clickAction="TOGGLE_STATUS"
-        clickActionData={{ id: item.id }}
-        accessibilityLabel={`Ubah status ${item.title}`}
-      >
-        <TextWidget
-          text={isCompleted ? "✓" : isFailed ? "×" : "○"}
-          style={{
-            fontSize: 13,
-            color: isCompleted || isFailed ? "#ffffff" : "#1d4ed8",
-            fontWeight: "600",
-          }}
-          maxLines={1}
-        />
-      </FlexWidget>
-    </FlexWidget>
-  );
-}
-
 export function TodayWidget({
   day,
   stats,
   items,
   width = 250,
-  height = 350,
 }: {
   day: string;
   stats: DailyStats;
   items: RoutineItem[];
   width?: number;
-  height?: number;
 }) {
   const { activeId, progress } = getActiveInfo(items);
   const activeItem = items.find((item) => item.id === activeId) ?? null;
-  const reservedHeight = activeItem ? 238 : 178;
-  const rowHeight = 48;
-  const visibleCount = Math.max(
-    items.length > 0 ? 1 : 0,
-    Math.min(
-      6,
-      Math.floor(Math.max(height - reservedHeight, rowHeight) / rowHeight),
-    ),
-  );
-  const visibleItems = items.slice(0, visibleCount);
-  const remainingCount = Math.max(0, items.length - visibleItems.length);
   const compact = width < 220;
 
   return (
@@ -222,7 +107,7 @@ export function TodayWidget({
         padding: compact ? 8 : 10,
       }}
       clickAction="OPEN_APP"
-      accessibilityLabel="Buka aplikasi Routine Daily"
+      accessibilityLabel="Open Routine Daily app"
     >
       <FlexWidget
         style={{
@@ -232,6 +117,8 @@ export function TodayWidget({
           borderRadius: 16,
           padding: compact ? 9 : 11,
         }}
+        clickAction="OPEN_APP"
+        accessibilityLabel="Open Routine Daily app"
       >
         <FlexWidget
           style={{
@@ -242,8 +129,12 @@ export function TodayWidget({
           }}
         >
           <TextWidget
-            text="Jadwal Hari Ini"
-            style={{ fontSize: compact ? 13 : 14, fontWeight: "bold", color: "#ffffff" }}
+            text="Today's Routine"
+            style={{
+              fontSize: compact ? 13 : 14,
+              fontWeight: "bold",
+              color: "#ffffff",
+            }}
             maxLines={1}
             truncate="END"
           />
@@ -264,10 +155,10 @@ export function TodayWidget({
             marginTop: 7,
           }}
         >
-          <Stat value={String(stats.completed)} label="Selesai" />
-          <Stat value={String(stats.failed)} label="Gagal" />
-          <Stat value={String(stats.pending)} label="Belum" />
-          <Stat value={`${stats.percentage}%`} label="Sukses" />
+          <Stat value={String(stats.completed)} label="Completed" />
+          <Stat value={String(stats.failed)} label="Failed" />
+          <Stat value={String(stats.pending)} label="Pending" />
+          <Stat value={`${stats.percentage}%`} label="Success" />
         </FlexWidget>
       </FlexWidget>
 
@@ -275,7 +166,9 @@ export function TodayWidget({
         <FlexWidget
           style={{
             width: "match_parent",
+            flex: 1,
             flexDirection: "column",
+            justifyContent: "center",
             backgroundColor: "#dbeafe",
             borderRadius: 13,
             padding: compact ? 8 : 9,
@@ -283,6 +176,8 @@ export function TodayWidget({
             borderColor: "#60a5fa",
             marginTop: 7,
           }}
+          clickAction="OPEN_APP"
+          accessibilityLabel="Open the routine in progress"
         >
           <FlexWidget
             style={{
@@ -293,7 +188,7 @@ export function TodayWidget({
             }}
           >
             <TextWidget
-              text="Sedang berlangsung"
+              text="In progress"
               style={{ fontSize: 10, fontWeight: "600", color: "#1d4ed8" }}
               maxLines={1}
               truncate="END"
@@ -316,59 +211,43 @@ export function TodayWidget({
             truncate="END"
           />
           <TextWidget
-            text={`${activeItem.startTime}-${activeItem.endTime} · sisa ${formatRemaining(activeItem.endTime)}`}
-            style={{ fontSize: 9, color: "#64748b", marginTop: 1, marginBottom: 4 }}
+            text={`${activeItem.startTime}-${activeItem.endTime} · ${formatRemaining(activeItem.endTime)} left`}
+            style={{
+              fontSize: 9,
+              color: "#64748b",
+              marginTop: 1,
+              marginBottom: 4,
+            }}
             maxLines={1}
             truncate="END"
           />
           <ProgressBar progress={progress} />
         </FlexWidget>
-      ) : null}
-
-      <TextWidget
-        text="Daftar jadwal"
-        style={{
-          fontSize: 12,
-          fontWeight: "bold",
-          color: "#1e293b",
-          marginTop: 9,
-          marginBottom: 1,
-        }}
-        maxLines={1}
-      />
-
-      {items.length === 0 ? (
-        <TextWidget
-          text="Tidak ada jadwal untuk hari ini."
-          style={{ fontSize: 11, color: "#64748b", marginTop: 7 }}
-          maxLines={1}
-          truncate="END"
-        />
       ) : (
-        visibleItems.map((item) => (
-          <RoutineRow
-            key={item.id}
-            item={item}
-            isActive={item.id === activeId}
-            isCompleted={item.status === "completed"}
-            isFailed={item.status === "failed"}
-          />
-        ))
-      )}
-
-      {remainingCount > 0 ? (
-        <TextWidget
-          text={`+${remainingCount} jadwal lainnya · buka aplikasi`}
+        <FlexWidget
           style={{
-            fontSize: 9,
-            color: "#1d4ed8",
-            fontWeight: "600",
-            marginTop: 6,
+            width: "match_parent",
+            flex: 1,
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#dbeafe",
+            borderRadius: 13,
+            borderWidth: 1,
+            borderColor: "#93c5fd",
+            marginTop: 7,
           }}
-          maxLines={1}
-          truncate="END"
-        />
-      ) : null}
+          clickAction="OPEN_APP"
+          accessibilityLabel="Open Routine Daily app"
+        >
+          <TextWidget
+            text="No routine in progress"
+            style={{ fontSize: 11, fontWeight: "600", color: "#1d4ed8" }}
+            maxLines={2}
+            truncate="END"
+          />
+        </FlexWidget>
+      )}
     </FlexWidget>
   );
 }

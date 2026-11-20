@@ -13,7 +13,6 @@ export const refreshWidget = () =>
           stats={stats}
           items={items}
           width={widgetInfo.width}
-          height={widgetInfo.height}
         />
       );
     },

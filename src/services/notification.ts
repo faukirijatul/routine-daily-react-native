@@ -42,8 +42,8 @@ export async function scheduleRoutineNotification(routine: RoutineItem) {
   try {
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: "Peringatan rutinitas",
-        body: `"${routine.title}" dimulai 30 menit lagi (${routine.startTime}).`,
+        title: "Routine reminder",
+        body: `"${routine.title}" starts in 30 minutes (${routine.startTime}).`,
         sound: true,
       },
       trigger: {
@@ -52,7 +52,7 @@ export async function scheduleRoutineNotification(routine: RoutineItem) {
       },
     });
   } catch (error) {
-    console.error("Gagal menjadwalkan notifikasi:", error);
+    console.error("Failed to schedule notification:", error);
   }
 }
 

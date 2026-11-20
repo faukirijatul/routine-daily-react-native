@@ -11,7 +11,7 @@ import { loadRoutines } from "./routineData";
 
 const CHANNEL_ID = "current-task";
 const NOTIF_ID = "current-task";
-const STEP_MS = 5 * 60 * 1000; // cadangan: trigger terjadwal tiap 5 menit
+const STEP_MS = 5 * 60 * 1000; // fallback: scheduled trigger every 5 minutes
 const DAYS_AHEAD = 2;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -27,8 +27,8 @@ const at = (base: Date, hhmm: string) => {
 async function ensureChannel() {
   return notifee.createChannel({
     id: CHANNEL_ID,
-    name: "Tugas Berjalan",
-    importance: AndroidImportance.LOW, // tanpa bunyi/popup
+    name: "Ongoing Routine",
+    importance: AndroidImportance.LOW, // no sound or popup
     visibility: AndroidVisibility.PUBLIC,
   });
 }
@@ -37,10 +37,10 @@ function formatRemaining(ms: number) {
   const diff = Math.max(0, Math.ceil(ms / 60000));
   const h = Math.floor(diff / 60);
   const m = diff % 60;
-  return h > 0 ? `${h}j ${m}m` : `${m}m`;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
-// Isi notifikasi untuk satu jadwal pada waktu t (dipakai trigger cadangan)
+// Notification content for one routine at time t (used by the fallback triggers)
 function buildNotification(
   item: Task,
   channelId: string,
@@ -53,15 +53,15 @@ function buildNotification(
     Math.max(0, Math.round(((t - start) / (end - start)) * 100)),
   );
   return {
-    id: NOTIF_ID, // id sama = notifikasi diganti, bukan menumpuk
+    id: NOTIF_ID, // same id = replace the notification instead of stacking
     title: item.title,
-    body: `${item.startTime} - ${item.endTime}  •  ${pct}%  •  sisa ${formatRemaining(end - t)}`,
+    body: `${item.startTime} - ${item.endTime}  •  ${pct}%  •  ${formatRemaining(end - t)} left`,
     android: {
       channelId,
       ongoing: true,
       autoCancel: false,
       onlyAlertOnce: true,
-      smallIcon: "ic_launcher",
+      smallIcon: "ic_notification",
       progress: { max: 100, current: pct },
       timeoutAfter: end - t,
       pressAction: { id: "default" },
@@ -69,7 +69,7 @@ function buildNotification(
   };
 }
 
-// Cari jadwal yang sedang berjalan (cek hari ini + kemarin untuk jadwal lewat tengah malam)
+// Find the routine in progress (checks today and yesterday for routines that cross midnight)
 async function findCurrent(nowMs: number) {
   const routines = await loadRoutines();
   const nowDate = new Date(nowMs);
@@ -89,7 +89,7 @@ async function findCurrent(nowMs: number) {
   return null;
 }
 
-// Notifikasi versi foreground service (terkunci, tanpa timeoutAfter)
+// Foreground service version of the notification (locked, no timeoutAfter)
 async function postServiceNotification() {
   const channelId = await ensureChannel();
   const now = Date.now();
@@ -106,7 +106,7 @@ async function postServiceNotification() {
       ongoing: true,
       autoCancel: false,
       onlyAlertOnce: true,
-      smallIcon: "ic_launcher",
+      smallIcon: "ic_notification",
       pressAction: { id: "default" },
     },
   };
@@ -115,7 +115,7 @@ async function postServiceNotification() {
     await notifee.displayNotification({
       ...base,
       title: "Routine Daily",
-      body: "Tidak ada jadwal berjalan",
+      body: "No routine in progress",
     });
     return;
   }
@@ -129,7 +129,7 @@ async function postServiceNotification() {
   await notifee.displayNotification({
     ...base,
     title: item.title,
-    body: `${item.startTime} - ${item.endTime}  •  ${pct}%  •  sisa ${formatRemaining(end - now)}`,
+    body: `${item.startTime} - ${item.endTime}  •  ${pct}%  •  ${formatRemaining(end - now)} left`,
     android: {
       ...base.android,
       progress: { max: 100, current: pct },
@@ -137,10 +137,10 @@ async function postServiceNotification() {
   });
 }
 
-// ===== Foreground service: update tiap pergantian menit =====
+// ===== Foreground service: update every minute =====
 let stopRequested = false;
 
-// Dipanggil sekali saat modul dimuat. Pastikan file ini di-import di entry (index.js).
+// Called once when the module loads. Make sure this file is imported in the entry point (index.ts).
 notifee.registerForegroundService(
   () =>
     new Promise<void>((resolve) => {
@@ -152,12 +152,12 @@ notifee.registerForegroundService(
           return;
         }
         try {
-          // Memposting ulang tiap menit: kalau user sempat menghapusnya, muncul lagi
+          // Re-post every minute: if the user dismissed it, it comes back
           await postServiceNotification();
         } catch (e) {
-          console.error("Gagal update notifikasi:", e);
+          console.error("Failed to update notification:", e);
         }
-        const delay = 60000 - (Date.now() % 60000) + 300; // tepat di awal menit berikutnya
+        const delay = 60000 - (Date.now() % 60000) + 300; // right at the start of the next minute
         setTimeout(tick, delay);
       };
 
@@ -165,7 +165,7 @@ notifee.registerForegroundService(
     }),
 );
 
-// Mulai (atau segarkan) notifikasi permanen
+// Start (or refresh) the persistent notification
 export async function startCurrentTaskService() {
   await notifee.requestPermission();
   await postServiceNotification();
@@ -176,17 +176,17 @@ export async function stopCurrentTaskService() {
   await notifee.stopForegroundService();
 }
 
-// Dipakai tombol di Pengaturan
+// Used by the button in Settings
 export async function showCurrentTaskNow(): Promise<string | null> {
   await startCurrentTaskService();
   const current = await findCurrent(Date.now());
   return current ? current.item.title : null;
 }
 
-// Trigger terjadwal sebagai cadangan bila timer service tertunda saat HP idle
+// Scheduled triggers as a fallback in case the foreground service timer is delayed while the phone is idle
 export async function syncCurrentTaskNotifications() {
   await notifee.requestPermission();
-  // Hanya batalkan trigger, jangan notifikasi foreground service yang sedang tampil
+  // Only cancel triggers; do not cancel the foreground service notification that is showing
   await notifee.cancelTriggerNotifications();
 
   const channelId = await ensureChannel();
